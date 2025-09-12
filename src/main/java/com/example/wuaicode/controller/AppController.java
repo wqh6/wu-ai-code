@@ -3,6 +3,7 @@ package com.example.wuaicode.controller;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.example.wuaicode.ai.AiCodeGenTypeRoutingService;
 import com.example.wuaicode.annotation.AuthCheck;
 import com.example.wuaicode.common.BaseResponse;
 import com.example.wuaicode.common.DeleteRequest;
@@ -53,6 +54,8 @@ public class AppController {
 
     @Resource
     private UserService userService;
+    @Resource
+    private AiCodeGenTypeRoutingService aiCodeGenTypeRoutingService;
     /**
      * 应用聊天生成代码（流式 SSE）
      *
@@ -128,8 +131,10 @@ public class AppController {
         app.setUserId(loginUser.getId());
         // 应用名称暂时为 initPrompt 前 12 位
         app.setAppName(initPrompt.substring(0, Math.min(initPrompt.length(), 12)));
-        // 暂时设置为多文件生成
-        app.setCodeGenType(CodeGenTypeEnum.VUE_PROJECT.getValue());
+
+        // 通过大模型匹配路由
+        CodeGenTypeEnum codeGenTypeEnum = aiCodeGenTypeRoutingService.chatRouting(initPrompt);
+        app.setCodeGenType(codeGenTypeEnum.getValue());
         // 插入数据库
         boolean result = appService.save(app);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);

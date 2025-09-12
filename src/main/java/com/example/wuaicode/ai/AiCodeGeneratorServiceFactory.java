@@ -1,6 +1,7 @@
 package com.example.wuaicode.ai;
 
-import com.example.wuaicode.ai.tool.FileWriteTool;
+import com.example.wuaicode.ai.tools.FileWriteTool;
+import com.example.wuaicode.ai.tools.ToolManager;
 import com.example.wuaicode.exception.BusinessException;
 import com.example.wuaicode.exception.ErrorCode;
 import com.example.wuaicode.model.enums.CodeGenTypeEnum;
@@ -35,6 +36,8 @@ public class AiCodeGeneratorServiceFactory {
     private RedisChatMemoryStore redisChatMemoryStore;
     @Resource
     private ChatHistoryService chatHistoryService;
+    @Resource
+    private ToolManager toolManager;
     /**
      * AI 服务实例缓存
      */
@@ -89,7 +92,7 @@ public class AiCodeGeneratorServiceFactory {
             case VUE_PROJECT -> AiServices.builder(AiCodeGeneratorService.class)
                     .streamingChatModel(reasoningStreamingChatModel)
                     .chatMemoryProvider(memoryId -> chatMemory)
-                    .tools(new FileWriteTool())
+                    .tools(toolManager.getAllTools())
                     .hallucinatedToolNameStrategy(toolExecutionRequest -> ToolExecutionResultMessage.from(
                             toolExecutionRequest, "Error: there is no tool called " + toolExecutionRequest.name()
                     ))
