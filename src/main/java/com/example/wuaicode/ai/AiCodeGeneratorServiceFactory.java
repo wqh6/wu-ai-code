@@ -1,5 +1,6 @@
 package com.example.wuaicode.ai;
 
+import com.example.wuaicode.ai.guardrail.PromptSafetyInputGuardrail;
 import com.example.wuaicode.ai.tools.FileWriteTool;
 import com.example.wuaicode.ai.tools.ToolManager;
 import com.example.wuaicode.exception.BusinessException;
@@ -93,7 +94,7 @@ public class AiCodeGeneratorServiceFactory {
                     .tools(toolManager.getAllTools())
                     .hallucinatedToolNameStrategy(toolExecutionRequest -> ToolExecutionResultMessage.from(
                             toolExecutionRequest, "Error: there is no tool called " + toolExecutionRequest.name()
-                    ))
+                    )).maxSequentialToolsInvocations(30).inputGuardrailClasses(PromptSafetyInputGuardrail.class)
                     .build();
             }
             // HTML 和多文件生成使用默认模型
@@ -104,6 +105,7 @@ public class AiCodeGeneratorServiceFactory {
                         .chatModel(chatModel)
                         .streamingChatModel(streamingChatModel)
                         .chatMemory(chatMemory)
+                        .inputGuardrailClasses(PromptSafetyInputGuardrail.class)
                         .build();
             }
             default -> throw new BusinessException(ErrorCode.SYSTEM_ERROR,
